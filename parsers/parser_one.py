@@ -51,3 +51,4 @@ base_url = 'http://wzvsz3g6dodj2fyh.onion/'
 soup = BeautifulSoup(get_result('http://wzvsz3g6dodj2fyh.onion/').text,'lxml')
 parse_pages(base_url)
 print(prod_list)
+print(len(prod_list))
