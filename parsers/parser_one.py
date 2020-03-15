@@ -16,7 +16,10 @@ def get_result(url):
     return result
 
 def take_list_of_products_from_page(html):
-    products = soup.find('div',class_='col-sm-9 padding-right').find_all('div', class_='col-sm-4')
+    try:
+        products = html.find('div',class_='col-sm-9 padding-right').find_all('div', class_='col-sm-4')
+    except:
+        return;
     for product in products:
         try:
             prod_url = base_url + product.find('div', class_='productinfo text-center').find('a').get('href')
@@ -36,13 +39,13 @@ def take_list_of_products_from_page(html):
         tuple = (prod_name, prod_price, prod_url)
         prod_list.append(tuple)
 
-def parse_pages(base_page):
+def parse_pages(page):
     catalog = soup.find('div', class_='panel-group category-products')
     for element in catalog.find_all('div', class_='panel panel-default'):
+        take_list_of_products_from_page(page)
         new_link = base_url + element.find('a').get('href')
-        new_page = BeautifulSoup(get_result(new_link).text,'lxml')
-        take_list_of_products_from_page(new_page)
-
+        page = BeautifulSoup(get_result(new_link).text,'lxml')
+    take_list_of_products_from_page(page)
 
 base_url = 'http://wzvsz3g6dodj2fyh.onion/'
 soup = BeautifulSoup(get_result('http://wzvsz3g6dodj2fyh.onion/').text,'lxml')
