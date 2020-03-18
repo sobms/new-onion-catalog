@@ -2,9 +2,14 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import socks
-
+import csv
 prod_list= []
 
+def csv_writer(list):
+    with open('data_base.csv', 'a', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        for line in list:
+            writer.writerows([line])
 def get_result(url):
     rs = requests.session()
     rs.proxies['http'] = os.getenv("proxy", "socks5h://localhost:9150")  # что передается?
@@ -55,3 +60,4 @@ soup = BeautifulSoup(get_result('http://f6pxr3iqw7iziuc2.onion/').text,'lxml')
 parse_pages(soup)
 print(prod_list)
 print(len(prod_list))
+csv_writer(prod_list)

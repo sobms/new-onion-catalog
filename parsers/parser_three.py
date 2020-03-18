@@ -2,9 +2,13 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import socks
-
+import csv
 prod_list= []
-
+def csv_writer(list):
+    with open('data_base.csv', 'a', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        for line in list:
+            writer.writerows([line])
 def get_result(url):
     rs = requests.session()
     rs.proxies['http'] = os.getenv("proxy", "socks5h://localhost:9150")  # что передается?
@@ -34,8 +38,9 @@ def take_list_of_products_from_page(html):
         except:
             prod_name = ''
         tuple = (prod_name, prod_price, prod_url)
-        print(tuple)
+        #print(tuple)
         prod_list.append(tuple)
+
 
 
 def parse_pages(page):
@@ -74,5 +79,7 @@ base_url = 'http://elite6c3wh756biv7v2fyhnoitizvl2gmoisq7xgmp2b2c5ryicottyd.onio
 drugs_url = 'http://elite6c3wh756biv7v2fyhnoitizvl2gmoisq7xgmp2b2c5ryicottyd.onion/index.php?cid=2'
 soup = BeautifulSoup(get_result(drugs_url).text,'lxml')
 parse_pages(soup)
+set(prod_list)
 print(prod_list)
 print(len(prod_list))
+csv_writer(prod_list)

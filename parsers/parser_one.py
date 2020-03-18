@@ -2,8 +2,14 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import socks
-
+import csv
 prod_list= []
+
+def csv_writer(list):
+    with open('data_base.csv', 'a', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        for line in list:
+            writer.writerows([line])
 
 def get_result(url):
     rs = requests.session()
@@ -51,4 +57,4 @@ base_url = 'http://wzvsz3g6dodj2fyh.onion/'
 soup = BeautifulSoup(get_result('http://wzvsz3g6dodj2fyh.onion/').text,'lxml')
 parse_pages(base_url)
 print(prod_list)
-print(len(prod_list))
+csv_writer(prod_list)
