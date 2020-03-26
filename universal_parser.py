@@ -5,6 +5,7 @@ from bs4 import NavigableString, BeautifulSoup
 import Find_Catalog_lib as cat_lib
 import Search_name as srch_nm
 import Search_price as srch_pr
+import  Search_url as srch_url
 import socks
 import csv
 
@@ -18,6 +19,7 @@ data_price = open('C:\data_price.txt', 'r', encoding='utf-8')
 data_words = make_list_of_words(data_price)
 names = open('C:\\names.txt', 'r', encoding='utf-8')
 names_list = make_list_of_words(names)
+set_of_tuples = set()
 
 def getText(parent):
     return ''.join(parent.find_all(text=True, recursive=False)).strip()
@@ -38,7 +40,7 @@ def get_result(url):
     result = rs.get(url, timeout=1000)
     rs.close()
     return result
-base_url = 'http://amazingd64el2zty.onion/?post_type=product'
+base_url = 'http://brmagic7souidyxq.onion/'
 soup = BeautifulSoup(get_result(base_url).text,'lxml')
 
 
@@ -59,8 +61,11 @@ def move_up_in_tree(tag):
                 #print(getText(l))
                 product_name = srch_nm.search_name(l)
                 product_price = srch_pr.search_price(l);
-                if product_price != ' ':
-                    print(product_price)
+                product_url = srch_url.search_url(l,base_url);
+
+                tuple = (product_name,product_price,product_url)
+                # print(tuple)
+                set_of_tuples.add(tuple)
              #exit(0)
 
         #print('\n\n\n')
@@ -81,5 +86,8 @@ def find_price(page):
                  #print(child.text)
                  move_up_in_tree(child)
 
-find_price(soup)
 
+find_price(soup)
+for elem in set_of_tuples:
+    print(str(elem))
+print(len(set_of_tuples))
