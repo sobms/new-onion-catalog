@@ -16,8 +16,8 @@ def getText(parent):
 def is_text_name(text,names):
     txt_as_list = text.strip().lower().split()
     length = len(txt_as_list)
-    if (length>1):
-        length = 2
+    if (length>2):
+        length = 3
     for i in range (1, length,1):
         lst = list(str(l) for l in itr.permutations(txt_as_list, i))
         for wrd in lst:
