@@ -57,7 +57,7 @@ def dfs(link):
     if return_flag == True:
         return
     soup = BeautifulSoup(get_result(link).text, 'lxml')
-    find_price(soup)#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!S
+    find_price(soup,link)#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!S
     print(link)                                          #print page link
     # insert_in_table_url(get_cursor(), link)
     used.add(link)
@@ -86,7 +86,7 @@ def dfs(link):
             dfs(new_link)
 
 
-def move_up_in_tree(tag):
+def move_up_in_tree(tag,link):
     cursor = connect_with_base();
     while (tag.parent.name != 'html'):
         tag = tag.parent
@@ -109,6 +109,8 @@ def move_up_in_tree(tag):
                 product_url = srch_url.search_url(l,base_url);
                 if (product_price == '') or (product_name == ''):
                     continue
+                if product_url == '':
+                    product_url = link
                 tuple = (product_name,product_price,product_url)
                 print(tuple)
                 set_of_tuples.add(tuple)
@@ -119,7 +121,7 @@ def move_up_in_tree(tag):
 
         #print('\n\n\n')
 
-def find_price(page):
+def find_price(page, link):
     num_child = 0
     for child in page.recursiveChildGenerator():
         # print([i.name for i in page.recursiveChildGenerator()])
@@ -135,7 +137,7 @@ def find_price(page):
                  #print(child.text)
                  num_child+=1;
 
-                 move_up_in_tree(child)
+                 move_up_in_tree(child,link)
 
     if (num_child == 1) and (child.name =='span'):
         while child.parent.name == 'span':
@@ -148,6 +150,8 @@ def find_price(page):
             product_url = srch_url.search_url(l, base_url);
             if (product_price == '') or (product_name == ''):
                 continue
+            if product_url == '':
+                product_url = link
             tuple = (product_name, product_price, product_url)
             set_of_tuples.add(tuple)
 
