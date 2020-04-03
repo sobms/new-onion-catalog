@@ -22,14 +22,22 @@ def compare_list_of_words(text,data_words):
 
 def search_price(tag):
     if isinstance(tag, NavigableString):
-          return ' '
+          return ''
     #print(getText(tag))
     if compare_list_of_words(getText(tag), data_words):
         #print(getText(tag))
-        return getText(tag)
+        for symb in data_words:
+            if (tag.text == symb) or (tag.text =='$'):
+                while tag.parent.name == 'span':
+                    tag = tag.parent
+                if len(tag.text) > 1: # проверка, что не один символ валюты
+                    return tag.text
+                else: return ''
+
+        return tag.text
 
     for child in list(tag.children):
         ans = search_price(child)
-        if ans != ' ':
+        if ans != '':
             return ans
-    return ' '
+    return ''

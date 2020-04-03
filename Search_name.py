@@ -1,4 +1,5 @@
 from bs4 import NavigableString
+import itertools as itr
 
 def make_list_of_words(data):
     list_data = []
@@ -14,22 +15,28 @@ def getText(parent):
 
 def is_text_name(text,names):
     txt_as_list = text.strip().lower().split()
-
-    for wrd in txt_as_list:
-        #print(wrd)
-        for name in names_list:
-            if name == wrd:
-                return True
+    length = len(txt_as_list)
+    if (length>1):
+        length = 2
+    for i in range (1, length,1):
+        lst = list(str(l) for l in itr.permutations(txt_as_list, i))
+        for wrd in lst:
+            deltab = '()\/\','
+            trantab = wrd.maketrans('','',deltab)
+            wrd=wrd.translate(trantab)
+            for name in names_list:
+                if name == wrd:
+                    return True
     return False
 
 def search_name(tag):
     if isinstance(tag, NavigableString):
-          return ' '
+          return ''
     if is_text_name(getText(tag), names):
          return(getText(tag))
 
     for child in list(tag.children):
         ans = search_name(child)
-        if ans != ' ':
+        if ans != '':
             return ans
-    return ' '
+    return ''
