@@ -1,6 +1,7 @@
 import re
 from bs4 import NavigableString
 
+
 def make_list_of_words(data):
     list_data = []
     for line in data:
@@ -20,7 +21,7 @@ def compare_list_of_words(text,data_words):
             return True
     return False
 
-def search_price(tag):
+def search_price(tag, name):
     if isinstance(tag, NavigableString):
           return ''
     #print(getText(tag))
@@ -37,7 +38,7 @@ def search_price(tag):
         return tag.text
 
     for child in list(tag.children):
-        ans = search_price(child)
-        if ans != '':
+        ans = search_price(child,name)
+        if ans != '' and ans != name and len(ans)<=10:
             return ans
     return ''

@@ -80,7 +80,7 @@ def dfs(link):
 
         if new_link not in used:
             now_time = time.time()
-            if now_time - start_time >= 720:        # twelve minutes limit to check site
+            if now_time - start_time >= 840:        # twelve minutes limit to check site
                 return_flag = True
                 return
             dfs(new_link)
@@ -105,7 +105,7 @@ def move_up_in_tree(tag,link):
                 #print(l.name)
                 #print(getText(l))
                 product_name = srch_nm.search_name(l)
-                product_price = srch_pr.search_price(l);
+                product_price = srch_pr.search_price(l,product_name);
                 product_url = srch_url.search_url(l,base_url);
                 if (product_price == '') or (product_name == ''):
                     continue
@@ -146,7 +146,7 @@ def find_price(page, link):
         for l in levels:
             child = child.parent
             product_name = srch_nm.search_name(l)
-            product_price = srch_pr.search_price(l);
+            product_price = srch_pr.search_price(l, product_name);
             product_url = srch_url.search_url(l, base_url);
             if (product_price == '') or (product_name == ''):
                 continue
