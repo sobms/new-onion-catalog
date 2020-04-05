@@ -1,8 +1,9 @@
+import time
 import psycopg2
 import requests
 import re
 import os
-import time
+
 from bs4 import NavigableString, BeautifulSoup
 import Find_Catalog_lib as cat_lib
 import Search_name as srch_nm
