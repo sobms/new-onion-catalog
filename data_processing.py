@@ -21,7 +21,11 @@ def data_sites_processing(data):
         y.append(line.strip().split()[0])
     return list_data, y
 Y = []
+com_wrd_lst = []
 data_sites = open('C:\sites.txt', 'r', encoding='utf-8')
+common_sites_words = open('C:\common_sites_words.txt', 'r', encoding='utf-8')
+for wrd in common_sites_words:
+    com_wrd_lst.append(wrd)
 sites, Y = data_sites_processing(data_sites)
 data_price = open('C:\data_price.txt', 'r', encoding='utf-8')
 data_words  = make_list_of_words(data_price)
@@ -64,13 +68,23 @@ def find_buttons(page):
     buttons = page.findAll('form')
     return len(buttons)
 
+def find_common_words(page):
+    txt = text_from_html(page)
+    num_com_words = 0
+    for wrd in com_wrd_lst:
+        wrd = wrd.strip()
+        txt = txt.lower().strip()
+        num_com_words += txt.count(wrd)
+    return num_com_words
+
 def get_data(sites):
     data = []
     print(Y)
-    print(sites)
+
     for site,y in zip(sites,Y):
+        print(site)
         page = BeautifulSoup(get_result(site).text, 'lxml')
-        x_features = [find_all_pictures(page),find_all_valute_sign(page, data_words),find_buttons(page),find_symb_numb(page)]
+        x_features = [find_all_pictures(page),find_all_valute_sign(page, data_words),find_buttons(page),find_symb_numb(page),find_common_words(page)/find_symb_numb(page)]
         data.append([x_features,y])
     return data
 
@@ -82,13 +96,13 @@ def connect_with_base():
 def get_cursor(conn):
     return conn.cursor()
 
-def insert_data(cursor, picture_count, valute_sign_count, buttons_count, symb_numb, site_class):
-    print(picture_count, valute_sign_count, buttons_count, symb_numb, site_class)
-    insert_query = "INSERT INTO dataset (picture_count, valute_sign_count, buttons_count, symb_numb, class) VALUES (%s, %s, %s, %s, %s);"
-    cursor.execute(insert_query, (picture_count, valute_sign_count, buttons_count, symb_numb, site_class))
+def insert_data(cursor, picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, site_class):
+    print(picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, site_class)
+    insert_query = "INSERT INTO dataset (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, class) VALUES (%s, %s, %s, %s, %s, %s);"
+    cursor.execute(insert_query, (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, site_class))
 
 def get_table(cursor):
-    cursor.execute("SELECT (picture_count, valute_sign_count, buttons_count, symb_numb, class) FROM dataset")
+    cursor.execute("SELECT (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, class) FROM dataset")
     print(cursor.fetchall())
 
 def save_data_in_base():
@@ -96,7 +110,32 @@ def save_data_in_base():
     cursor = get_cursor(conn)
     for elem in get_data(sites):
         print(elem)
-        insert_data(cursor, elem[0][0], elem[0][1], elem[0][2],elem[0][3], int(elem[1]))
+        insert_data(cursor, elem[0][0], elem[0][1], elem[0][2],elem[0][3], elem[0][4], int(elem[1]))
     conn.commit()
-
 save_data_in_base()
+
+# def common_words(sites):
+#     com_words = []
+#     main_lst = []
+#     for site in sites:
+#         page = BeautifulSoup(get_result(site).text, 'lxml')
+#         str = text_from_html(page)
+#         lst = str.split()
+#         main_lst += lst
+#     print(len(main_lst))
+#     for el in zip(set(main_lst),np.zeros(len(main_lst))):
+#         com_words.append([el[0].strip().lower(),el[1]])
+#     print(len(com_words))
+#     print(com_words)
+#     for word in main_lst:
+#          for sp in com_words:
+#              if word.strip().lower() == sp[0]:
+#                 sp[1]+=1
+#     for sp in com_words:
+#         if (sp[1]>=4) and (sp[1]<30):
+#             common_words_sites.write(sp[0]+'\n')
+#
+#     print(com_words)
+#     print(len(main_lst))
+# common_words(sites)
+# #
