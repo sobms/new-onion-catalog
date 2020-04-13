@@ -22,7 +22,7 @@ def data_sites_processing(data):
     return list_data, y
 Y = []
 com_wrd_lst = []
-data_sites = open('C:\sites.txt', 'r', encoding='utf-8')
+data_sites = open('C:\\test_sites.txt', 'r', encoding='utf-8')
 common_sites_words = open('C:\common_sites_words.txt', 'r', encoding='utf-8')
 for wrd in common_sites_words:
     com_wrd_lst.append(wrd)
@@ -98,11 +98,11 @@ def get_cursor(conn):
 
 def insert_data(cursor, picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, site_class):
     print(picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, site_class)
-    insert_query = "INSERT INTO dataset (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, class) VALUES (%s, %s, %s, %s, %s, %s);"
+    insert_query = "INSERT INTO test_dataset (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, class) VALUES (%s, %s, %s, %s, %s, %s);"
     cursor.execute(insert_query, (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, site_class))
 
 def get_table(cursor):
-    cursor.execute("SELECT (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, class) FROM dataset")
+    cursor.execute("SELECT (picture_count, valute_sign_count, buttons_count, symb_numb, com_words_part, class) FROM test_dataset")
     print(cursor.fetchall())
 
 def save_data_in_base():
