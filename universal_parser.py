@@ -44,7 +44,10 @@ def get_result(url):
     rs.proxies['https'] = os.getenv("proxy", "socks5h://localhost:9150")
     rs.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0'
     rs.headers['Accept-Language'] = 'Accept-Language: en-US,en;q=0.5'
-    result = rs.get(url, timeout=1000)
+    try:
+        result = rs.get(url, timeout=10)
+    except:
+        return -1
     rs.close()
     return result
 #base_url = 'http://amazingd64el2zty.onion/?post_type=product'
@@ -57,7 +60,10 @@ def dfs(link):
     global start_time, return_flag
     if return_flag == True:
         return
-    soup = BeautifulSoup(get_result(link).text, 'lxml')
+    page = get_result(link)
+    if page == -1:
+        return;
+    soup = BeautifulSoup(page.text, 'lxml')
     find_price(soup,link)#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!S
     print(link)                                          #print page link
     # insert_in_table_url(get_cursor(), link)

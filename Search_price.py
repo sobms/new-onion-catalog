@@ -39,6 +39,6 @@ def search_price(tag, name):
 
     for child in list(tag.children):
         ans = search_price(child,name)
-        if ans != '' and ans != name and len(ans)<=10:
+        if ans != '' and ans != name and len(ans)<=20:
             return ans
     return ''
