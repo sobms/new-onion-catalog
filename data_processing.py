@@ -22,7 +22,7 @@ def data_sites_processing(data):
     return list_data, y
 Y = []
 com_wrd_lst = []
-data_sites = open('C:\\test_sites.txt', 'r', encoding='utf-8')
+data_sites = open('C:\_test_sites.txt', 'r', encoding='utf-8')
 common_sites_words = open('C:\common_sites_words.txt', 'r', encoding='utf-8')
 for wrd in common_sites_words:
     com_wrd_lst.append(wrd)
@@ -112,7 +112,7 @@ def save_data_in_base():
         print(elem)
         insert_data(cursor, elem[0][0], elem[0][1], elem[0][2],elem[0][3], elem[0][4], int(elem[1]))
     conn.commit()
-save_data_in_base()
+#save_data_in_base()
 
 # def common_words(sites):
 #     com_words = []

@@ -3,12 +3,18 @@ import psycopg2
 import requests
 import re
 import os
-
+import numpy as np
 from bs4 import NavigableString, BeautifulSoup
 import Find_Catalog_lib as cat_lib
 import Search_name as srch_nm
 import Search_price as srch_pr
-import  Search_url as srch_url
+import Search_url as srch_url
+import data_processing as dp
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.linear_model import LogisticRegression
+
 import socks
 import csv
 
@@ -171,11 +177,11 @@ def get_cursor(conn):
     return conn.cursor()
 
 def insert_data(cursor, product_name, product_price, product_url):
-    insert_query = "INSERT INTO products_base (Наименование, Цена, Ссылка) VALUES (%s, %s, %s);"
+    insert_query = "INSERT INTO products_base2 (Наименование, Цена, Ссылка) VALUES (%s, %s, %s);"
     cursor.execute(insert_query, (product_name, product_price, product_url))
 
 def get_table(cursor):
-    cursor.execute("SELECT (Наименование, Цена, Ссылка) FROM products_base")
+    cursor.execute("SELECT (Наименование, Цена, Ссылка) FROM products_base2")
     print(cursor.fetchall())
 
 def save_data_in_base(set_of_tuples):
@@ -187,15 +193,78 @@ def save_data_in_base(set_of_tuples):
     conn.commit()
     print(len(set_of_tuples))
 
+def train_Logistic_Regression():
+    table = pd.read_csv('C:\dataset (1).csv')
+    X = np.array([np.array(table.loc[i,['valute_sign_count','com_words_part','picture_count']]) for i in range(len(table))])
+    y = np.array([np.array(table.loc[i,['class']]) for i in range(len(table))])
+    clf =  LogisticRegression(random_state= 0 ).fit( X,  y)
+    table = pd.read_csv('C:\_Test_dataset.csv')
+    X_test = np.array(
+        [np.array(table.loc[i, ['valute_sign_count', 'com_words_part', 'picture_count']]) for i in range(len(table))])
+    y_test = np.array([np.array(table.loc[i, ['class']]) for i in range(len(table))])
+    print(clf.score(X_test, y_test))
+    return clf
+
+def predict_Logistic_Regression(clf,links):
+    for l in links:
+        page = get_result(l)
+        if page == -1:
+            continue;
+        soup = BeautifulSoup(page.text, 'lxml')
+        x = np.array([[dp.find_all_valute_sign(soup, dp.data_words),dp.find_common_words(soup)/dp.find_symb_numb(soup),dp.find_all_pictures(soup)]])
+        #print(l)
+        pred =clf.predict(x)
+        #print(pred)
+        if (pred>0):
+            return True
+    return False
+    #table = pd.read_csv('/content/test_dataset.csv')
+    #X_test = np.array([np.array(table.loc[i,['valute_sign_count','com_words_part','picture_count']]) for i in range(len(table))])
+    #y_test = np.array([np.array(table.loc[i,['class']]) for i in range(len(table))])
+    #clf.score(X_test,y_test)
+
+def choose_links(link):
+    links = []
+    page = get_result(link)
+    if page == -1:
+        return;
+    soup = BeautifulSoup(page.text, 'lxml')
+    lst = soup.findAll('a')
+    lst = [l.get('href') for l in lst]
+    lst = [value for value in lst if value != None]
+    np.random.seed(42)
+    for i in range(7):
+        try:
+            r = np.random.randint(len(lst))
+        except:
+            continue;
+        l = lst[r]
+        try:
+            if l[:4] != 'http':
+                l = link+l
+                links.append(l)
+        except:
+            continue;
+    return links
+
+
+clf = train_Logistic_Regression()
 for link in list_links:
     return_flag = False
     list_of_catalogs.clear()
     used.clear()
     base_url = link #save base link
-    start_time = time.time() #start time
-    dfs(link) #dfs
-    save_data_in_base(set_of_tuples)
-    set_of_tuples.clear()
+    links = choose_links(link)#new
+    links.append(link)
+    pred = predict_Logistic_Regression(clf,links)#new
+    print(link)
+    print(pred)
+    if pred == True:
+        start_time = time.time()  # start time
+        dfs(link) #dfs
+        save_data_in_base(set_of_tuples)
+        set_of_tuples.clear()
+
 
 
 
