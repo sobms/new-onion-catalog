@@ -3,7 +3,6 @@ import psycopg2
 import requests
 import re
 import os
-import numpy as np
 from bs4 import NavigableString, BeautifulSoup
 import Find_Catalog_lib as cat_lib
 import Search_name as srch_nm
@@ -30,9 +29,11 @@ data_price = open('C:\data_price.txt', 'r', encoding='utf-8')
 data_words = make_list_of_words(data_price)
 names = open('C:\\names.txt', 'r', encoding='utf-8')
 names_list = make_list_of_words(names)
+global set_of_tuples
 set_of_tuples = set()
 list_links = make_list_of_words(set_links)
 list_of_catalogs = []
+
 
 def getText(parent):
     return ''.join(parent.find_all(text=True, recursive=False)).strip()
@@ -51,7 +52,7 @@ def get_result(url):
     rs.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0'
     rs.headers['Accept-Language'] = 'Accept-Language: en-US,en;q=0.5'
     try:
-        result = rs.get(url, timeout=10)
+        result = rs.get(url, timeout=100)
     except:
         return -1
     rs.close()
@@ -60,10 +61,11 @@ def get_result(url):
 #soup = BeautifulSoup(get_result(base_url).text,'lxml')
 
 used = set()
+global return_flag
 return_flag = False
 def dfs(link):
-    global used, base_url
-    global start_time, return_flag
+    global used
+    global start_time,return_flag
     if return_flag == True:
         return
     page = get_result(link)
@@ -71,29 +73,29 @@ def dfs(link):
         return;
     soup = BeautifulSoup(page.text, 'lxml')
     find_price(soup,link)#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!S
-    print(link)                                          #print page link
+    #print(link)                                          #print page link
     # insert_in_table_url(get_cursor(), link)
     used.add(link)
 
-    try:
-        html_page = get_result(link)
-    except:
-         return
+
+    html_page = get_result(link)
+    if html_page == -1:
+        return;
     parse_page = BeautifulSoup(html_page.text, 'lxml')
     #f.write(str(text_from_html(html_page.text))+'\n')
     for html_element in parse_page.findAll('a'):
         # for tmp_element in parse_page.findAll('a'):
         #     print('!  ',tmp_element.get('href'))
         if str(html_element.get('href'))[:4] == 'http':
-            if str(html_element.get('href'))[:len(base_url)] == base_url:
+            if str(html_element.get('href'))[:len(link)] == link:
                 new_link = str(html_element.get('href'))
             else:
                 continue
-        else: new_link = base_url + str(html_element.get('href'))
+        else: new_link = link + str(html_element.get('href'))
 
         if new_link not in used:
             now_time = time.time()
-            if now_time - start_time >= 840:        # twelve minutes limit to check site
+            if (now_time - start_time) >= 60:        # twelve minutes limit to check site
                 return_flag = True
                 return
             dfs(new_link)
@@ -119,7 +121,7 @@ def move_up_in_tree(tag,link):
                 #print(getText(l))
                 product_name = srch_nm.search_name(l)
                 product_price = srch_pr.search_price(l,product_name);
-                product_url = srch_url.search_url(l,base_url);
+                product_url = srch_url.search_url(l,link);
                 if (product_price == '') or (product_name == ''):
                     continue
                 if product_url == '':
@@ -160,7 +162,7 @@ def find_price(page, link):
             child = child.parent
             product_name = srch_nm.search_name(l)
             product_price = srch_pr.search_price(l, product_name);
-            product_url = srch_url.search_url(l, base_url);
+            product_url = srch_url.search_url(l, link);
             if (product_price == '') or (product_name == ''):
                 continue
             if product_url == '':
@@ -211,10 +213,13 @@ def predict_Logistic_Regression(clf,links):
         if page == -1:
             continue;
         soup = BeautifulSoup(page.text, 'lxml')
-        x = np.array([[dp.find_all_valute_sign(soup, dp.data_words),dp.find_common_words(soup)/dp.find_symb_numb(soup),dp.find_all_pictures(soup)]])
-        #print(l)
+        if dp.find_symb_numb(soup)>0:
+            x = np.array([[dp.find_all_valute_sign(soup, dp.data_words),dp.find_common_words(soup)/dp.find_symb_numb(soup),dp.find_all_pictures(soup)]])
+        else:
+            return;
+        print(l)
         pred =clf.predict(x)
-        #print(pred)
+        print(pred)
         if (pred>0):
             return True
     return False
@@ -233,7 +238,7 @@ def choose_links(link):
     lst = [l.get('href') for l in lst]
     lst = [value for value in lst if value != None]
     np.random.seed(42)
-    for i in range(7):
+    for i in range(6):
         try:
             r = np.random.randint(len(lst))
         except:
@@ -248,13 +253,14 @@ def choose_links(link):
     return links
 
 
-clf = train_Logistic_Regression()
-for link in list_links:
-    return_flag = False
+
+def link_process(link,clf):
+    global start_time,return_flag
     list_of_catalogs.clear()
     used.clear()
-    base_url = link #save base link
     links = choose_links(link)#new
+    if links == None:
+        return
     links.append(link)
     pred = predict_Logistic_Regression(clf,links)#new
     print(link)
@@ -262,11 +268,36 @@ for link in list_links:
     if pred == True:
         start_time = time.time()  # start time
         dfs(link) #dfs
+        return_flag = False
         save_data_in_base(set_of_tuples)
         set_of_tuples.clear()
 
+def Search_in_Ahmia():
+    clf = train_Logistic_Regression()
+    torch_link = 'https://ahmia.fi/search/'
+    requests_=open('C:\_requests.txt','r',encoding='utf-8')
+    for wrd in requests_:
+        for np in range(1):
+            parametrs={'q':wrd}
+            rs = requests.session()
+            rs.proxies['http'] = os.getenv("proxy", "socks5h://localhost:9150")  # что передается?
+            rs.proxies['https'] = os.getenv("proxy", "socks5h://localhost:9150")
+            rs.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0'
+            rs.headers['Accept-Language'] = 'Accept-Language: en-US,en;q=0.5'
+            result = rs.get(torch_link, timeout=10,params=parametrs)
+            rs.close()
+            soup = BeautifulSoup(result.text, 'lxml')
 
+            answers = soup.findAll('cite')
+            answers = set(answers)
+            print(answers)
+            print(len(answers))
+            for link in answers:
+                link = 'http://'+str(link.text)
+                print(link)
+                link_process(link, clf)
 
+Search_in_Ahmia();
 
 
 
