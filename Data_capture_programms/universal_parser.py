@@ -95,7 +95,7 @@ def dfs(link):
 
         if new_link not in used:
             now_time = time.time()
-            if (now_time - start_time) >= 60:        # twelve minutes limit to check site
+            if (now_time - start_time) >= 180:        # twelve minutes limit to check site
                 return_flag = True
                 return
             dfs(new_link)
@@ -284,7 +284,7 @@ def Search_in_Ahmia():
             rs.proxies['https'] = os.getenv("proxy", "socks5h://localhost:9150")
             rs.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0'
             rs.headers['Accept-Language'] = 'Accept-Language: en-US,en;q=0.5'
-            result = rs.get(torch_link, timeout=10,params=parametrs)
+            result = rs.get(torch_link, timeout=30,params=parametrs)
             rs.close()
             soup = BeautifulSoup(result.text, 'lxml')
 
